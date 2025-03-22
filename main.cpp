@@ -2,6 +2,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "Map.h"
+//Xay dung ban do
+
 
 using namespace std;
 

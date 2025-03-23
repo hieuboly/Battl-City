@@ -2,6 +2,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "Map.h"
+#include "Tank.h"
 //Xay dung ban do
 
 
@@ -13,11 +14,12 @@ public:
     SDL_Window* window = nullptr;       // Cửa sổ game
     SDL_Renderer* renderer = nullptr;   // Renderer để vẽ lên cửa sổ
     Map map;                            // Bản đồ
-
+    Tank* tank = nullptr;
     SDL_Texture* wallTexture = nullptr;   // Texture của tường
     SDL_Texture* treeTexture = nullptr;   // Texture của cây
     SDL_Texture* waterTexture = nullptr;  // Texture của nước
     SDL_Texture* emptyTexture = nullptr;  // Texture của ô trống
+    SDL_Texture* tankTexture = nullptr;
 
     Game() {} // Hàm khởi tạo
 
@@ -56,11 +58,13 @@ public:
         treeTexture = loadTexture("cay.png");
         waterTexture = loadTexture("nuoc.png");
         emptyTexture = loadTexture("nen.png");
+        tankTexture = loadTexture("tank.png");
 
         if (!wallTexture || !treeTexture || !waterTexture || !emptyTexture) {
             cout << "Không thể load textures!" << endl;
             return false;
         }
+        tank = new Tank(1, 1, tankTexture);
 
         return true;
     }
@@ -71,7 +75,7 @@ public:
         SDL_DestroyTexture(treeTexture);
         SDL_DestroyTexture(waterTexture);
         SDL_DestroyTexture(emptyTexture);
-
+        SDL_DestroyTexture(tankTexture);
         // Giải phóng renderer và cửa sổ
         SDL_DestroyRenderer(renderer);
         renderer = nullptr;
@@ -115,6 +119,22 @@ public:
                     // Nếu sự kiện là đóng cửa sổ, thoát
                     quit = true;
                 }
+                if (e.type == SDL_KEYDOWN) {
+                    switch (e.key.keysym.sym) {
+                        case SDLK_UP:
+                            tank->move(0, -1, map); // Di chuyển lên
+                            break;
+                        case SDLK_DOWN:
+                            tank->move(0, 1, map);  // Di chuyển xuống
+                            break;
+                        case SDLK_LEFT:
+                            tank->move(-1, 0, map); // Di chuyển trái
+                            break;
+                        case SDLK_RIGHT:
+                            tank->move(1, 0, map);  // Di chuyển phải
+                            break;
+                    }
+                }
             }
 
             // Xóa màn hình
@@ -123,6 +143,7 @@ public:
 
             // Vẽ bản đồ
             map.render(renderer, wallTexture, treeTexture, waterTexture, emptyTexture);
+            tank->render(renderer);
             map.renderTrees(renderer, treeTexture);
 
             // Cập nhật màn hình

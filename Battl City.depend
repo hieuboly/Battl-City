@@ -1,9 +1,10 @@
 # depslib dependency file v1.0
-1742663391 source:d:\ltnc\battl city\main.cpp
+1742702961 source:d:\ltnc\battl city\main.cpp
 	<iostream>
 	<SDL2/SDL.h>
 	<SDL2/SDL_image.h>
 	"Map.h"
+	"Tank.h"
 
 1742663403 source:d:\ltnc\battl city\src\map.cpp
 	"Map.h"
@@ -12,4 +13,13 @@
 	<iostream>
 	<vector>
 	<SDL2/SDL.h>
+
+1742702999 d:\ltnc\battl city\include\tank.h
+	<SDL2/SDL.h>
+	"Map.h"
+
+1742703656 source:d:\ltnc\battl city\src\tank.cpp
+	"Tank.h"
+	"Map.h"
+	<iostream>
 

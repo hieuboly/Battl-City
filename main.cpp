@@ -3,6 +3,7 @@
 #include <SDL2/SDL_image.h>
 #include "Map.h"
 #include "Tank.h"
+#include "Bullet.h"
 //Xay dung ban do
 
 
@@ -20,6 +21,8 @@ public:
     SDL_Texture* waterTexture = nullptr;  // Texture của nước
     SDL_Texture* emptyTexture = nullptr;  // Texture của ô trống
     SDL_Texture* tankTexture = nullptr;
+    SDL_Texture* bulletTexture = nullptr;
+    SDL_Texture* wallDamagedTexture = nullptr;
 
     Game() {} // Hàm khởi tạo
 
@@ -59,7 +62,8 @@ public:
         waterTexture = loadTexture("nuoc.png");
         emptyTexture = loadTexture("nen.png");
         tankTexture = loadTexture("tank.png");
-
+        bulletTexture = loadTexture("dan.png");
+        wallDamagedTexture = loadTexture("nen.png");
         if (!wallTexture || !treeTexture || !waterTexture || !emptyTexture) {
             cout << "Không thể load textures!" << endl;
             return false;
@@ -76,8 +80,11 @@ public:
         SDL_DestroyTexture(waterTexture);
         SDL_DestroyTexture(emptyTexture);
         SDL_DestroyTexture(tankTexture);
+        SDL_DestroyTexture(bulletTexture);
+        SDL_DestroyTexture(wallDamagedTexture);
         // Giải phóng renderer và cửa sổ
         SDL_DestroyRenderer(renderer);
+
         renderer = nullptr;
 
         SDL_DestroyWindow(window);
@@ -133,6 +140,9 @@ public:
                         case SDLK_RIGHT:
                             tank->move(1, 0, map);  // Di chuyển phải
                             break;
+                        case SDLK_SPACE: // Bắn đạn khi nhấn Space
+                            tank->fire(bulletTexture);
+                            break;
                     }
                 }
             }
@@ -145,8 +155,19 @@ public:
             map.render(renderer, wallTexture, treeTexture, waterTexture, emptyTexture);
             tank->render(renderer);
             map.renderTrees(renderer, treeTexture);
+            for (auto it = tank->bullets.begin(); it != tank->bullets.end();) {
+                Bullet* bullet = *it;
+                bullet->move();
+                if (bullet->checkCollision(map)) {
+                   bullet->handleCollision(map);
+                   delete bullet;
+                    it = tank->bullets.erase(it);
+                } else {
+                    bullet->render(renderer);
+                    ++it;
+                }
+            }
 
-            // Cập nhật màn hình
             SDL_RenderPresent(renderer);
         }
     }

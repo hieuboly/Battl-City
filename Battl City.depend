@@ -1,25 +1,36 @@
 # depslib dependency file v1.0
-1742702961 source:d:\ltnc\battl city\main.cpp
+1742882435 source:d:\ltnc\battl city\main.cpp
 	<iostream>
 	<SDL2/SDL.h>
 	<SDL2/SDL_image.h>
 	"Map.h"
 	"Tank.h"
+	"Bullet.h"
 
-1742663403 source:d:\ltnc\battl city\src\map.cpp
+1742881895 source:d:\ltnc\battl city\src\map.cpp
 	"Map.h"
 
-1742663437 d:\ltnc\battl city\include\map.h
+1742883340 d:\ltnc\battl city\include\map.h
 	<iostream>
 	<vector>
 	<SDL2/SDL.h>
 
-1742702999 d:\ltnc\battl city\include\tank.h
+1742881935 d:\ltnc\battl city\include\tank.h
 	<SDL2/SDL.h>
 	"Map.h"
+	"Bullet.h"
+	<vector>
 
-1742703656 source:d:\ltnc\battl city\src\tank.cpp
+1742882273 source:d:\ltnc\battl city\src\tank.cpp
 	"Tank.h"
 	"Map.h"
 	<iostream>
+
+1742882075 source:d:\ltnc\battl city\src\bullet.cpp
+	"Bullet.h"
+	"Map.h"
+	<SDL2/SDL.h>
+
+1742881895 d:\ltnc\battl city\include\bullet.h
+	<SDL2/SDL.h>
 

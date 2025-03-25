@@ -34,9 +34,11 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="include/Bullet.h" />
 		<Unit filename="include/Map.h" />
 		<Unit filename="include/Tank.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="src/Bullet.cpp" />
 		<Unit filename="src/Map.cpp" />
 		<Unit filename="src/Tank.cpp" />
 		<Extensions>

@@ -11,23 +11,20 @@ bool Tank ::move(int dx, int dy, Map& map){
         return false;// dung im
     }
 
-  char terrain = map.getTileType(newX, newY);
+  int terrain = map.getTileType(newX, newY);
 
  switch (terrain){
- case WALL:
+ case 2:
+ case 1:
       return false;// neu vao tupng khong di chuyen duoc
- case WATER :
+ case -1 :
       takeDamage();// -1 mang neu di vao nuoc
- case EMPTY:
+ case 0:
     currentDirection=(dx==0&&dy==-1) ? UP : (dx==0 && dy==1) ? DOWN :(dx==-1 && dy==0) ? LEFT:RIGHT;
-    break;
- case TREE:
-    currentDirection = (dx==0 && dy == -1) ? UP : (dx==0 && dy== 1) ? DOWN : (dx==-1 && dy == 0)? LEFT: RIGHT;
     break;
  default:
     break;
  }
-
         x=newX;
         y=newY;
 
@@ -59,4 +56,32 @@ switch (currentDirection) {
     }
 
 SDL_RenderCopyEx(renderer, texture, nullptr, &tankRect, angle, nullptr, SDL_FLIP_NONE);
+for (Bullet* bullet : bullets) {
+        bullet->render(renderer);
+    }
+}
+
+void Tank::fire(SDL_Texture* bulletTexture) {
+    if (!isAlive) return;
+
+    int bulletStartX = x * TILE_SIZE + TILE_SIZE / 2 - 8; // 8 = 16/2 (giữa xe tăng)
+    int bulletStartY = y * TILE_SIZE + TILE_SIZE / 2 - 8;
+
+    BulletDirection bulletDir;
+    switch (currentDirection) {
+    case UP:    bulletDir = BULLET_UP;    break;
+    case DOWN:  bulletDir = BULLET_DOWN;  break;
+    case LEFT:  bulletDir = BULLET_LEFT;  break;
+    case RIGHT: bulletDir = BULLET_RIGHT; break;
+    }
+
+Bullet* newBullet = new Bullet(bulletStartX, bulletStartY, bulletDir, bulletTexture); // Tạo con trỏ Bullet*
+    bullets.push_back(newBullet); //
+}
+Tank::~Tank() {
+    // Giải phóng bộ nhớ của các viên đạn
+    for (Bullet* bullet : bullets) {
+        delete bullet;
+    }
+    bullets.clear(); // Xóa tất cả các con trỏ khỏi vector
 }

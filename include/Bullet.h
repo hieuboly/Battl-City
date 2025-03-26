@@ -12,21 +12,22 @@ enum BulletDirection {
 
 // Forward declaration for Map
 class Map;
-
+class Tank;
 class Bullet {
 public:
     int x, y;          // Vị trí
     int speed;       // Tốc độ di chuyển
     BulletDirection direction; // Hướng di chuyển
-    bool isAlive;      // Đạn còn tồn tại hay không
-
+    bool isAlive;// Đạn còn tồn tại hay không
+    bool isEnemyBullet;
     SDL_Texture* texture; // Texture của đạn
 
-    Bullet(int startX, int startY, BulletDirection dir, SDL_Texture* tex);
+    Bullet(int startX, int startY, BulletDirection dir, SDL_Texture* tex,bool enemy = false);
     void move();
     void render(SDL_Renderer* renderer);
-    bool checkCollision(Map& map);
-    void handleCollision(Map& map);
+    bool checkCollision(Map& map,Tank* playerTank);
+    void handleCollision(Map& map,Tank* playerTank);
+    void fire(SDL_Texture* bulletTexture);
 
 private:
     static const int BULLET_SIZE = 16; // Kích thước đạn (16x16)

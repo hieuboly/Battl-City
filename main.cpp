@@ -1,9 +1,13 @@
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <vector>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "Map.h"
 #include "Tank.h"
-#include "Bullet.h"
+#include "EnemyTank.h"
+
 //Xay dung ban do
 
 
@@ -21,8 +25,12 @@ public:
     SDL_Texture* waterTexture = nullptr;  // Texture của nước
     SDL_Texture* emptyTexture = nullptr;  // Texture của ô trống
     SDL_Texture* tankTexture = nullptr;
+    SDL_Texture* enemyTankTexture = nullptr;
+    SDL_Texture* enemyBulletTexture = nullptr;
     SDL_Texture* bulletTexture = nullptr;
     SDL_Texture* wallDamagedTexture = nullptr;
+    vector<EnemyTank*> enemies;
+     bool gameOver = false;
 
     Game() {} // Hàm khởi tạo
 
@@ -61,14 +69,24 @@ public:
         treeTexture = loadTexture("cay.png");
         waterTexture = loadTexture("nuoc.png");
         emptyTexture = loadTexture("nen.png");
+        enemyTankTexture = loadTexture("tank_enemy.png");
+        enemyBulletTexture = loadTexture("dan_dich.png");
         tankTexture = loadTexture("tank.png");
         bulletTexture = loadTexture("dan.png");
         wallDamagedTexture = loadTexture("nen.png");
-        if (!wallTexture || !treeTexture || !waterTexture || !emptyTexture) {
+         if (!wallTexture || !treeTexture || !waterTexture || !emptyTexture || !tankTexture || !enemyTankTexture || !bulletTexture || !enemyBulletTexture) { //Đã xóa enemyTankTexture2
             cout << "Không thể load textures!" << endl;
             return false;
         }
-        tank = new Tank(1, 1, tankTexture);
+
+        tank = new Tank(tankTexture);
+
+        // Create enemy tanks
+        enemies.push_back(new EnemyTank(5, 2, enemyTankTexture, enemyBulletTexture, BASIC)); //Sử dụng enemyTankTexture
+        enemies.push_back(new EnemyTank(10, 2, enemyTankTexture, enemyBulletTexture, FAST));//Sử dụng enemyTankTexture
+        enemies.push_back(new EnemyTank(15, 2, enemyTankTexture, enemyBulletTexture, BASIC));//Sử dụng enemyTankTexture
+
+        return true;
 
         return true;
     }
@@ -80,6 +98,8 @@ public:
         SDL_DestroyTexture(waterTexture);
         SDL_DestroyTexture(emptyTexture);
         SDL_DestroyTexture(tankTexture);
+        SDL_DestroyTexture(enemyTankTexture);
+        SDL_DestroyTexture(enemyBulletTexture);
         SDL_DestroyTexture(bulletTexture);
         SDL_DestroyTexture(wallDamagedTexture);
         // Giải phóng renderer và cửa sổ
@@ -91,6 +111,14 @@ public:
         window = nullptr;
 
         // Tắt SDL và SDL_image
+        for (EnemyTank* enemy : enemies) {
+            delete enemy;
+        }
+        enemies.clear();
+         if (tank != nullptr) {
+            delete tank;
+            tank = nullptr;
+        }
         IMG_Quit();
         SDL_Quit();
     }
@@ -118,7 +146,7 @@ public:
         // Vòng lặp chính của game
         bool quit = false; // Biến để kiểm soát việc thoát khỏi vòng lặp
         SDL_Event e;       // Biến để lưu trữ các sự kiện
-
+        srand(time(nullptr));
         while (!quit) {
             // Xử lý sự kiện
             while (SDL_PollEvent(&e) != 0) {
@@ -146,32 +174,116 @@ public:
                     }
                 }
             }
-
-            // Xóa màn hình
-            SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF); // Đặt màu đen
-            SDL_RenderClear(renderer); // Xóa màn hình
-
-            // Vẽ bản đồ
-            map.render(renderer, wallTexture, treeTexture, waterTexture, emptyTexture);
-            tank->render(renderer);
-            map.renderTrees(renderer, treeTexture);
-            for (auto it = tank->bullets.begin(); it != tank->bullets.end();) {
-                Bullet* bullet = *it;
-                bullet->move();
-                if (bullet->checkCollision(map)) {
-                   bullet->handleCollision(map);
-                   delete bullet;
-                    it = tank->bullets.erase(it);
-                } else {
-                    bullet->render(renderer);
-                    ++it;
-                }
+             if (!gameOver) {
+                update();
             }
 
-            SDL_RenderPresent(renderer);
+            // Render the scene
+            render();
+
+            if(gameOver)
+            {
+                 cout << "Game Over!" << endl;
+                SDL_Delay(3000);
+                quit = true;
+            }
         }
     }
-};
+
+        void update() {
+    // Enemy Tank AI
+    for (EnemyTank* enemy : enemies) {
+        if (enemy->isAlive) {
+            enemy->move(map); // Move the enemy
+            if (rand() % 100 < 2) { // 2% chance to fire each frame
+                enemy->fire(); // Enemy fires
+            }
+        }
+    }
+
+     updateBullets();
+
+        // Check win condition (all enemies dead)
+        bool allEnemiesDead = true;
+        for (EnemyTank* enemy : enemies) {
+            if (enemy->isAlive) {
+                allEnemiesDead = false;
+                break;
+            }
+        }
+
+        if (allEnemiesDead) {
+            gameOver = true;
+            cout << "You Win!" << endl;
+        }
+        if(!tank->isAlive){
+            gameOver=true;
+        }
+
+    }
+    void updateBullets() {
+    // Player bullets
+    for (auto it = tank->bullets.begin(); it != tank->bullets.end();) {
+        Bullet* bullet = *it;
+        bullet->move();
+        if (bullet->checkCollision(map, tank)) { // Check collision with map and player
+            bullet->handleCollision(map, tank);  // Handle collision with map and player
+            delete bullet;
+            it = tank->bullets.erase(it);
+        } else {
+            bullet->render(renderer);
+            ++it;
+        }
+    }
+
+    // Enemy bullets
+    for (EnemyTank* enemy : enemies) {
+        for (auto it = enemy->bullets.begin(); it != enemy->bullets.end();) {
+            Bullet* bullet = *it;
+            bullet->move();
+            if (bullet->checkCollision(map, tank)) { // Check collision with map and player
+                bullet->handleCollision(map, tank);  // Handle collision with map and player
+                delete bullet;
+                it = enemy->bullets.erase(it);
+            } else {
+                bullet->render(renderer);
+                ++it;
+            }
+        }
+    }
+}
+    void render() {
+        // Clear screen
+        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+        SDL_RenderClear(renderer);
+
+        // Render map
+        map.render(renderer, wallTexture, treeTexture, waterTexture, emptyTexture);
+        map.renderTrees(renderer, treeTexture);
+        // Render tank
+        tank->render(renderer);
+
+         //Render enemy tanks
+        for (EnemyTank* enemy : enemies) {
+            if (enemy->isAlive) {
+                enemy->render(renderer);
+            }
+        }
+         //Render player bullets
+        for (Bullet* bullet : tank->bullets) {
+            bullet->render(renderer);
+        }
+
+        // Render enemy bullets
+        for (EnemyTank* enemy : enemies) {
+            for (Bullet* bullet : enemy->bullets) {
+                bullet->render(renderer);
+            }
+        }
+        SDL_RenderPresent(renderer);
+    }
+};       // Xóa màn hình
+
 
 int main(int argc, char* args[]) {
     Game game; // Tạo đối tượng game

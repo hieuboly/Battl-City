@@ -2,8 +2,8 @@
 #include "Map.h"
 #include <iostream>
 
-Tank::Tank(int startX, int startY, SDL_Texture *tex):
-   x(startX), y(startY), lives(5), texture(tex), isAlive(true), currentDirection(UP) {}
+Tank::Tank( SDL_Texture *tex):
+   x(10), y(18), lives(5), texture(tex), isAlive(true), currentDirection(UP) {}
 bool Tank ::move(int dx, int dy, Map& map){
     int newX=x+dx;
     int newY=y+dy;

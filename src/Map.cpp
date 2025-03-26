@@ -1,6 +1,7 @@
 #include "Map.h"
 
 Map::Map() : charMap(MAP_HEIGHT, std::vector<int>(MAP_WIDTH, EMPTY)) {
+
     // Khởi tạo bản đồ với kích thước đã định và lấp đầy bằng ô trống
     generateMapLayout(); // Tạo bố cục bản đồ
 }
@@ -31,10 +32,10 @@ void Map::generateMapLayout() {
         "#   #          #   #",
         "#     ^  # #  ^    #",
         "#    ^#^     ^#^   #",
-        "#     ^   #   ^    #",
-        "#                  #",
-        "##  ####   ####   ##",
-        "##                ##",
+        "#     ^       ^    #",
+        "#   ############   #",
+        "##  ##        ##  ##",
+        "##  ##        ##  ##",
         "####################"
     };
 
@@ -57,6 +58,7 @@ void Map::generateMapLayout() {
                     case '~':
                         charMap[i + offsetY][j + offsetX] = WATER;
                         break;
+
                     default:
                         charMap[i + offsetY][j + offsetX] = EMPTY;
                         break;
@@ -65,7 +67,6 @@ void Map::generateMapLayout() {
         }
     }
 
-    // Thêm tường ở cạnh trái và phải của bản đồ
     for (int i = 0; i < MAP_HEIGHT; i++) {
         if (i + offsetY < 0 || i + offsetY >= MAP_HEIGHT) continue;
         charMap[i][0] = WALL; // Cạnh trái
@@ -76,35 +77,36 @@ void Map::generateMapLayout() {
     }
 }
 void Map::render(SDL_Renderer* renderer, SDL_Texture* wallTexture, SDL_Texture* treeTexture, SDL_Texture* waterTexture, SDL_Texture* emptyTexture) {
-    // Duyệt qua từng ô của bản đồ
     for (int i = 0; i < MAP_HEIGHT; ++i) {
         for (int j = 0; j < MAP_WIDTH; ++j) {
-            SDL_Rect tileRect; // Hình chữ nhật đại diện cho một ô
-            tileRect.x = j * TILE_SIZE; // Vị trí x của ô
-            tileRect.y = i * TILE_SIZE; // Vị trí y của ô
-            tileRect.w = TILE_SIZE;     // Chiều rộng của ô
-            tileRect.h = TILE_SIZE;     // Chiều cao của ô
+            SDL_Rect tileRect;
+            tileRect.x = j * TILE_SIZE;
+            tileRect.y = i * TILE_SIZE;
+            tileRect.w = TILE_SIZE;
+            tileRect.h = TILE_SIZE;
 
             // Vẽ Nền (ô trống)
             SDL_RenderCopy(renderer, emptyTexture, nullptr, &tileRect);
 
-            // Vẽ Địa Hình
-            SDL_Texture* currentTexture = nullptr; // Texture hiện tại để vẽ
+            SDL_Texture* currentTexture = nullptr;
             switch (charMap[i][j]) {
-                case 2: //Vẫn là tường
-                case 1: //Đã bị bắn 1 lần
-                    currentTexture = wallTexture; // Nếu là tường, dùng texture tường
+                case WALL:
+                case 1:
+                    currentTexture = wallTexture;
                     break;
-                case -1:
-                    currentTexture = waterTexture; // Nếu là nước, dùng texture nước
+                case WATER:
+                    currentTexture = waterTexture;
                     break;
-                case 0:
-                     break;
+
+                default:
+                    currentTexture = nullptr;
+                    break;
             }
 
-            if (currentTexture != nullptr) {
-                SDL_RenderCopy(renderer, currentTexture, nullptr, &tileRect); // Vẽ texture
+             if (currentTexture != nullptr ) {
+                SDL_RenderCopy(renderer, currentTexture, nullptr, &tileRect);
             }
+
         }
     }
 }
@@ -138,3 +140,4 @@ void Map::damageWall(int x, int y) {
         }
     }
 }
+

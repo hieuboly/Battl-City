@@ -19,7 +19,7 @@ class Tank
        SDL_Texture* texture;
        bool isAlive; // da che chua
        Direction currentDirection; // huong di chuyen hien tai ;
-       Tank (int StartX, int StartY, SDL_Texture* tex); // khoi tao
+       Tank ( SDL_Texture* tex); // khoi tao
        bool move(int dx,int dy, Map& map);// ham di chuyen
        void takeDamage();// nhan sat thuong
        void render( SDL_Renderer* renderer); // ve xe tang

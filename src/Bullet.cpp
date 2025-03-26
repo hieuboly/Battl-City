@@ -1,9 +1,10 @@
 #include "Bullet.h"
 #include "Map.h"
+#include "Tank.h"
 #include <SDL2/SDL.h>
 
-Bullet::Bullet(int startX, int startY, BulletDirection dir, SDL_Texture* tex) :
-    x(startX), y(startY), speed(10), direction(dir), isAlive(true), texture(tex) {}
+Bullet::Bullet(int startX, int startY, BulletDirection dir, SDL_Texture* tex, bool enemy) :
+    x(startX), y(startY), speed(1), direction(dir), isAlive(true), texture(tex), isEnemyBullet(enemy) {}
 
 void Bullet::move() {
     if (!isAlive) return;
@@ -28,7 +29,7 @@ void Bullet::render(SDL_Renderer* renderer) {
     SDL_RenderCopy(renderer, texture, nullptr, &bulletRect);
 }
 
-bool Bullet::checkCollision(Map& map) {
+bool Bullet::checkCollision(Map& map,Tank* playerTank) {
     if (!isAlive) return false;
 
     int gridX = x / TILE_SIZE;
@@ -41,13 +42,15 @@ bool Bullet::checkCollision(Map& map) {
 
     int terrain = map.getTileType(gridX, gridY);
 
+
+
     if (terrain > 0) {
         return true; //Va chạm tường
     }
 
     return false;
 }
-void Bullet::handleCollision(Map& map) {
+void Bullet::handleCollision(Map& map, Tank* playerTank) {
     if (!isAlive) return;
 
     int gridX = (int)(x / TILE_SIZE);
@@ -65,4 +68,5 @@ void Bullet::handleCollision(Map& map) {
         map.damageWall(gridX, gridY); //Gọi hàm damageWall của Map
         isAlive = false;
     }
+
 }

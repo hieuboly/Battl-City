@@ -221,17 +221,44 @@ public:
         }
 
     }
-    void updateBullets() {
+void updateBullets() {
     // Player bullets
     for (auto it = tank->bullets.begin(); it != tank->bullets.end();) {
         Bullet* bullet = *it;
         bullet->move();
-        if (bullet->checkCollision(map, tank)) { // Check collision with map and player
-            bullet->handleCollision(map, tank);  // Handle collision with map and player
+
+        bool collision = false;
+        // Check collision with enemies
+        for (int i = enemies.size() - 1; i >= 0; --i) {
+            EnemyTank* enemy = enemies[i];
+            if (enemy->isAlive) {
+                SDL_Rect bulletRect = {bullet->x, bullet->y, 16, 16};
+                SDL_Rect enemyRect = {enemy->x * TILE_SIZE, enemy->y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+                if (SDL_HasIntersection(&bulletRect, &enemyRect)) {
+                    enemy->takeDamage();
+                    cout << "Enemy lives remaining: " << enemy->lives << endl;
+                    if (!enemy->isAlive) {
+                        delete enemies[i];
+                        enemies.erase(enemies.begin() + i);
+                    }
+                    delete bullet;
+                    it = tank->bullets.erase(it);
+                    collision = true;
+                    break; // Exit inner loop after collision
+                }
+            }
+        }
+
+
+        if (collision) {
+            continue; // Skip the rest of the loop if collision occurred
+        }
+
+        if (bullet->checkCollision(map, tank)) {
+            bullet->handleCollision(map, tank);
             delete bullet;
             it = tank->bullets.erase(it);
         } else {
-            bullet->render(renderer);
             ++it;
         }
     }
@@ -241,12 +268,23 @@ public:
         for (auto it = enemy->bullets.begin(); it != enemy->bullets.end();) {
             Bullet* bullet = *it;
             bullet->move();
-            if (bullet->checkCollision(map, tank)) { // Check collision with map and player
-                bullet->handleCollision(map, tank);  // Handle collision with map and player
+            if (tank->isAlive) { // Thêm điều kiện kiểm tra isAlive
+                SDL_Rect bulletRect = {bullet->x, bullet->y, 16, 16};
+                SDL_Rect tankRect = {tank->x * TILE_SIZE, tank->y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+                if (SDL_HasIntersection(&bulletRect, &tankRect)) {
+                    cout << "Tank hit by enemy bullet!" << endl; // Thêm dòng này
+                    tank->takeDamage();
+                    cout << "Tank lives remaining: " << tank->lives << endl; // Thêm dòng này
+                    delete bullet;
+                    it = enemy->bullets.erase(it);
+                    continue; // Bỏ qua phần còn lại của vòng lặp
+                }
+            }
+            if (bullet->checkCollision(map, tank)) {
+                bullet->handleCollision(map, tank);
                 delete bullet;
                 it = enemy->bullets.erase(it);
             } else {
-                bullet->render(renderer);
                 ++it;
             }
         }
@@ -259,7 +297,7 @@ public:
 
         // Render map
         map.render(renderer, wallTexture, treeTexture, waterTexture, emptyTexture);
-        map.renderTrees(renderer, treeTexture);
+
         // Render tank
         tank->render(renderer);
 
@@ -269,6 +307,7 @@ public:
                 enemy->render(renderer);
             }
         }
+          map.renderTrees(renderer, treeTexture, waterTexture);
          //Render player bullets
         for (Bullet* bullet : tank->bullets) {
             bullet->render(renderer);

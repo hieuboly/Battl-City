@@ -3,8 +3,8 @@
 #include "Tank.h"
 #include <SDL2/SDL.h>
 
-Bullet::Bullet(int startX, int startY, BulletDirection dir, SDL_Texture* tex, bool enemy) :
-    x(startX), y(startY), speed(1), direction(dir), isAlive(true), texture(tex), isEnemyBullet(enemy) {}
+Bullet::Bullet(int startX, int startY, BulletDirection dir, SDL_Texture* tex, Tank* owner, bool enemy) :
+    x(startX), y(startY), speed(1), direction(dir), isAlive(true), texture(tex), isEnemyBullet(enemy),owner(owner) {}
 
 void Bullet::move() {
     if (!isAlive) return;
@@ -29,7 +29,8 @@ void Bullet::render(SDL_Renderer* renderer) {
     SDL_RenderCopy(renderer, texture, nullptr, &bulletRect);
 }
 
-bool Bullet::checkCollision(Map& map,Tank* playerTank) {
+// Trong Bullet.cpp
+bool Bullet::checkCollision(Map& map, Tank* playerTank) {
     if (!isAlive) return false;
 
     int gridX = x / TILE_SIZE;
@@ -42,12 +43,19 @@ bool Bullet::checkCollision(Map& map,Tank* playerTank) {
 
     int terrain = map.getTileType(gridX, gridY);
 
-
-
     if (terrain > 0) {
         return true; //Va chạm tường
     }
 
+    // Kiểm tra va chạm với xe tăng người chơi
+    if (!isEnemyBullet && playerTank != owner && playerTank->isAlive) {
+        SDL_Rect bulletRect = {x, y, BULLET_SIZE, BULLET_SIZE};
+        SDL_Rect tankRect = {playerTank->x * TILE_SIZE, playerTank->y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+
+        if (SDL_HasIntersection(&bulletRect, &tankRect)) {
+            return true; // Va chạm với xe tăng người chơi
+        }
+    }
     return false;
 }
 void Bullet::handleCollision(Map& map, Tank* playerTank) {
@@ -69,4 +77,14 @@ void Bullet::handleCollision(Map& map, Tank* playerTank) {
         isAlive = false;
     }
 
+      // Xử lý va chạm với xe tăng người chơi
+    if (!isEnemyBullet&& playerTank != owner  && playerTank->isAlive) {
+        SDL_Rect bulletRect = {x, y, BULLET_SIZE, BULLET_SIZE};
+        SDL_Rect tankRect = {playerTank->x * TILE_SIZE, playerTank->y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+
+        if (SDL_HasIntersection(&bulletRect, &tankRect)) {
+            playerTank->takeDamage();
+            isAlive = false;
+        }
+    }
 }

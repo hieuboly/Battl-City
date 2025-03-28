@@ -6,7 +6,7 @@
 #include <ctime>
 
 EnemyTank::EnemyTank(int startX, int startY, SDL_Texture* tex, SDL_Texture* bulletTex, EnemyType t) :
-    x(startX), y(startY), texture(tex), bulletTexture(bulletTex), isAlive(true),
+    x(startX), y(startY), texture(tex), bulletTexture(bulletTex),lives(2), isAlive(true),
     currentDirection(static_cast<BulletDirection>(rand() % 4)), // Ép kiểu sang BulletDirection
     type(t), moveTimer(0), fireTimer(0), stuckTimer(0) {
     srand(time(nullptr));
@@ -36,6 +36,10 @@ bool EnemyTank::move(Map& map) {
             stuckTimer = 0;
         }
         return false;
+    }
+    int terrain = map.getTileType(newX, newY);
+    if (terrain == WATER) {
+        takeDamage(); // Mất mạng nếu đi vào nước
     }
     stuckTimer = 0;
     x = newX;
@@ -106,7 +110,7 @@ void EnemyTank::fire() {
     case BULLET_RIGHT: bulletDir = BULLET_RIGHT; break;
     }
 
-    Bullet* newBullet = new Bullet(bulletStartX, bulletStartY, bulletDir, bulletTexture, true); // Sử dụng bulletTexture của xe tăng
+    Bullet* newBullet = new Bullet(bulletStartX, bulletStartY, bulletDir, bulletTexture,nullptr,  true); // Sử dụng bulletTexture của xe tăng
     bullets.push_back(newBullet);
 
     fireTimer = 10 + rand() % 10;

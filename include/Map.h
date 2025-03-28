@@ -25,7 +25,7 @@ class Map
         int getTileType(int x, int y);
         void generateMapLayout();
         void render(SDL_Renderer* renderer, SDL_Texture* wallTexture, SDL_Texture* treeTexture,SDL_Texture* waterTexture, SDL_Texture* emptyTexture); // Thêm baseTexture
-        void renderTrees(SDL_Renderer* renderer, SDL_Texture* treeTexture);
+        void renderTrees(SDL_Renderer* renderer, SDL_Texture* treeTexture,SDL_Texture* waterTexture);
         void damageWall(int x, int y);
 
 };

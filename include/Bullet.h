@@ -20,9 +20,10 @@ public:
     BulletDirection direction; // Hướng di chuyển
     bool isAlive;// Đạn còn tồn tại hay không
     bool isEnemyBullet;
+    Tank* owner;
     SDL_Texture* texture; // Texture của đạn
 
-    Bullet(int startX, int startY, BulletDirection dir, SDL_Texture* tex,bool enemy = false);
+    Bullet(int startX, int startY, BulletDirection dir, SDL_Texture* tex, Tank* owner,bool enemy = false);
     void move();
     void render(SDL_Renderer* renderer);
     bool checkCollision(Map& map,Tank* playerTank);

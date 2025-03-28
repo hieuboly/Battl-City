@@ -111,7 +111,7 @@ void Map::render(SDL_Renderer* renderer, SDL_Texture* wallTexture, SDL_Texture* 
     }
 }
 
-void Map::renderTrees(SDL_Renderer* renderer, SDL_Texture* treeTexture) {
+void Map::renderTrees(SDL_Renderer* renderer, SDL_Texture* treeTexture,SDL_Texture* waterTexture) {
     // Duyệt qua từng ô của bản đồ
     for (int i = 0; i < MAP_HEIGHT; ++i) {
         for (int j = 0; j < MAP_WIDTH; ++j) {
@@ -121,12 +121,18 @@ void Map::renderTrees(SDL_Renderer* renderer, SDL_Texture* treeTexture) {
                 tileRect.y = i * TILE_SIZE; // Vị trí y của ô
                 tileRect.w = TILE_SIZE;     // Chiều rộng của ô
                 tileRect.h = TILE_SIZE;     // Chiều cao của ô
-                SDL_RenderCopy(renderer, treeTexture, nullptr, &tileRect); // Vẽ texture cây
+            if (charMap[i][j] == TREE) {
+                SDL_RenderCopy(renderer, treeTexture, nullptr, &tileRect);
+            }
+
+            // Ve nuoc neu co
+            if (charMap[i][j] == WATER) {
+                SDL_RenderCopy(renderer, waterTexture, nullptr, &tileRect);
             }
         }
     }
 }
-
+}
 void Map::damageWall(int x, int y) {
     if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return;
 

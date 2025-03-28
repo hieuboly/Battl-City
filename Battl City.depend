@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1742973175 source:d:\ltnc\battl city\main.cpp
+1743136252 source:d:\ltnc\battl city\main.cpp
 	<iostream>
 	<cstdlib>
 	<ctime>
@@ -10,10 +10,10 @@
 	"Tank.h"
 	"EnemyTank.h"
 
-1742961025 source:d:\ltnc\battl city\src\map.cpp
+1743137273 source:d:\ltnc\battl city\src\map.cpp
 	"Map.h"
 
-1742960670 d:\ltnc\battl city\include\map.h
+1743136252 d:\ltnc\battl city\include\map.h
 	<iostream>
 	<vector>
 	<SDL2/SDL.h>
@@ -24,18 +24,18 @@
 	"Bullet.h"
 	<vector>
 
-1742965119 source:d:\ltnc\battl city\src\tank.cpp
+1743135114 source:d:\ltnc\battl city\src\tank.cpp
 	"Tank.h"
 	"Map.h"
 	<iostream>
 
-1742973600 source:d:\ltnc\battl city\src\bullet.cpp
+1743135114 source:d:\ltnc\battl city\src\bullet.cpp
 	"Bullet.h"
 	"Map.h"
 	"Tank.h"
 	<SDL2/SDL.h>
 
-1742973494 d:\ltnc\battl city\include\bullet.h
+1743051124 d:\ltnc\battl city\include\bullet.h
 	<SDL2/SDL.h>
 
 1742974248 d:\ltnc\battl city\include\enemytank.h
@@ -44,7 +44,7 @@
 	<vector>
 	<cstdlib>
 
-1742975880 source:d:\ltnc\battl city\src\enemytank.cpp
+1743136650 source:d:\ltnc\battl city\src\enemytank.cpp
 	"EnemyTank.h"
 	"Map.h"
 	"Bullet.h"

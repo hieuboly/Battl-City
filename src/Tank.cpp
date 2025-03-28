@@ -75,7 +75,7 @@ void Tank::fire(SDL_Texture* bulletTexture) {
     case RIGHT: bulletDir = BULLET_RIGHT; break;
     }
 
-Bullet* newBullet = new Bullet(bulletStartX, bulletStartY, bulletDir, bulletTexture); // Tạo con trỏ Bullet*
+Bullet* newBullet = new Bullet(bulletStartX, bulletStartY, bulletDir, bulletTexture,this); // Tạo con trỏ Bullet*
     bullets.push_back(newBullet); //
 }
 Tank::~Tank() {

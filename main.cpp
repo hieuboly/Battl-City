@@ -7,7 +7,7 @@
 #include "Map.h"
 #include "Tank.h"
 #include "EnemyTank.h"
-
+#include <SDL_mixer.h>
 //Xay dung ban do
 
 
@@ -29,9 +29,12 @@ public:
     SDL_Texture* enemyBulletTexture = nullptr;
     SDL_Texture* bulletTexture = nullptr;
     SDL_Texture* wallDamagedTexture = nullptr;
+    SDL_Texture* titleTexture = nullptr;
+    SDL_Texture* gameOverTexture = nullptr;
     vector<EnemyTank*> enemies;
-     bool gameOver = false;
-
+    bool gameOver = false;
+    bool gameWin = false;
+    Mix_Music* backgroundMusic = nullptr;
     Game() {} // Hàm khởi tạo
 
     bool init() {
@@ -48,6 +51,10 @@ public:
             return false;
         }
 
+        if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+    cout << "SDL_mixer không thể khởi tạo! Lỗi SDL_mixer: " << Mix_GetError() << endl;
+    return false;
+}
         // Tạo cửa sổ
         window = SDL_CreateWindow("Battle City Map", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
         if (!window) {
@@ -74,7 +81,13 @@ public:
         tankTexture = loadTexture("tank.png");
         bulletTexture = loadTexture("dan.png");
         wallDamagedTexture = loadTexture("nen.png");
-         if (!wallTexture || !treeTexture || !waterTexture || !emptyTexture || !tankTexture || !enemyTankTexture || !bulletTexture || !enemyBulletTexture) { //Đã xóa enemyTankTexture2
+        titleTexture = loadTexture("man hinh ban dau.png");
+        gameOverTexture = loadTexture("game_over.png");
+    if (!gameOverTexture) {
+        cout << "Không thể load texture Game Over!" << endl;
+        return false;
+    }
+                if (!wallTexture || !treeTexture || !waterTexture || !emptyTexture || !tankTexture || !enemyTankTexture || !bulletTexture || !enemyBulletTexture||!titleTexture) {
             cout << "Không thể load textures!" << endl;
             return false;
         }
@@ -86,12 +99,21 @@ public:
         enemies.push_back(new EnemyTank(10, 2, enemyTankTexture, enemyBulletTexture, FAST));//Sử dụng enemyTankTexture
         enemies.push_back(new EnemyTank(15, 2, enemyTankTexture, enemyBulletTexture, BASIC));//Sử dụng enemyTankTexture
 
-        return true;
+          backgroundMusic = Mix_LoadMUS("play-time-fun-upbeat-gaming-birthday-music-259703.mp3");
+        if (!backgroundMusic) {
+            cout << "Không thể load nhạc nền! Lỗi SDL_mixer: " << Mix_GetError() << endl;
+            return false;
+        }
+
+
+        Mix_PlayMusic(backgroundMusic, -1);
 
         return true;
     }
 
     void close() {
+        Mix_FreeMusic(backgroundMusic);
+        backgroundMusic = nullptr;
         // Giải phóng textures
         SDL_DestroyTexture(wallTexture);
         SDL_DestroyTexture(treeTexture);
@@ -102,6 +124,10 @@ public:
         SDL_DestroyTexture(enemyBulletTexture);
         SDL_DestroyTexture(bulletTexture);
         SDL_DestroyTexture(wallDamagedTexture);
+        SDL_DestroyTexture(titleTexture);
+        SDL_DestroyTexture(gameOverTexture);
+        gameOverTexture = nullptr;
+
         // Giải phóng renderer và cửa sổ
         SDL_DestroyRenderer(renderer);
 
@@ -109,6 +135,10 @@ public:
 
         SDL_DestroyWindow(window);
         window = nullptr;
+         if (gameOverTexture) {
+        SDL_DestroyTexture(gameOverTexture);
+        gameOverTexture = nullptr;
+    }
 
         // Tắt SDL và SDL_image
         for (EnemyTank* enemy : enemies) {
@@ -120,7 +150,9 @@ public:
             tank = nullptr;
         }
         IMG_Quit();
+        Mix_Quit();
         SDL_Quit();
+
     }
 
     SDL_Texture* loadTexture(const string& filePath) {
@@ -141,12 +173,24 @@ public:
 
         return texture; // Trả về texture
     }
+    void renderTitleScreen() {
+    SDL_Rect titleRect;
+    titleRect.x = 0;  // Căn trái
+    titleRect.y = 0;  // Căn trên
+    titleRect.w = 700; // Chiều rộng
+    titleRect.h = 800; // Chiều cao
+
+    SDL_RenderCopy(renderer, titleTexture, nullptr, &titleRect);
+    SDL_RenderPresent(renderer);
+}
 
     void run() {
         // Vòng lặp chính của game
         bool quit = false; // Biến để kiểm soát việc thoát khỏi vòng lặp
         SDL_Event e;       // Biến để lưu trữ các sự kiện
         srand(time(nullptr));
+        renderTitleScreen();
+        SDL_Delay(3000);
         while (!quit) {
             // Xử lý sự kiện
             while (SDL_PollEvent(&e) != 0) {
@@ -174,19 +218,14 @@ public:
                     }
                 }
             }
-             if (!gameOver) {
-                update();
-            }
 
-            // Render the scene
+        if (!gameOver) {
+            update();
             render();
-
-            if(gameOver)
-            {
-                 cout << "Game Over!" << endl;
-                SDL_Delay(3000);
-                quit = true;
-            }
+        } else {
+            showGameOverScreen();
+            quit = true;
+        }
         }
     }
 
@@ -215,9 +254,13 @@ public:
         if (allEnemiesDead) {
             gameOver = true;
             cout << "You Win!" << endl;
+            Mix_HaltMusic();
+
         }
         if(!tank->isAlive){
             gameOver=true;
+            Mix_HaltMusic();
+
         }
 
     }
@@ -244,14 +287,14 @@ void updateBullets() {
                     delete bullet;
                     it = tank->bullets.erase(it);
                     collision = true;
-                    break; // Exit inner loop after collision
+                    break;
                 }
             }
         }
 
 
         if (collision) {
-            continue; // Skip the rest of the loop if collision occurred
+            continue;
         }
 
         if (bullet->checkCollision(map, tank)) {
@@ -263,7 +306,7 @@ void updateBullets() {
         }
     }
 
-    // Enemy bullets
+
     for (EnemyTank* enemy : enemies) {
         for (auto it = enemy->bullets.begin(); it != enemy->bullets.end();) {
             Bullet* bullet = *it;
@@ -289,6 +332,14 @@ void updateBullets() {
             }
         }
     }
+}
+ void showGameOverScreen() {
+
+    SDL_RenderClear(renderer);
+    SDL_Rect destRect = {0, 0, 640, 640};
+    SDL_RenderCopy(renderer, gameOverTexture, NULL, &destRect);
+    SDL_RenderPresent(renderer);
+    SDL_Delay(3000);
 }
     void render() {
         // Clear screen
@@ -325,15 +376,15 @@ void updateBullets() {
 
 
 int main(int argc, char* args[]) {
-    Game game; // Tạo đối tượng game
+    Game game;
 
     if (!game.init()) {
-        // Nếu khởi tạo thất bại, thoát
+
         return 1;
     }
 
-    game.run(); // Chạy game
-    game.close(); // Giải phóng tài nguyên
+    game.run();
+    game.close();
 
-    return 0; // Kết thúc chương trình
+    return 0;
 }

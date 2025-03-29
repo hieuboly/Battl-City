@@ -6,7 +6,7 @@
 #include <ctime>
 
 EnemyTank::EnemyTank(int startX, int startY, SDL_Texture* tex, SDL_Texture* bulletTex, EnemyType t) :
-    x(startX), y(startY), texture(tex), bulletTexture(bulletTex),lives(2), isAlive(true),
+    x(startX), y(startY), texture(tex), bulletTexture(bulletTex),lives(3), isAlive(true),
     currentDirection(static_cast<BulletDirection>(rand() % 4)), // Ép kiểu sang BulletDirection
     type(t), moveTimer(0), fireTimer(0), stuckTimer(0) {
     srand(time(nullptr));

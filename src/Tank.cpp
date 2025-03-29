@@ -3,7 +3,7 @@
 #include <iostream>
 
 Tank::Tank( SDL_Texture *tex):
-   x(10), y(18), lives(5), texture(tex), isAlive(true), currentDirection(UP) {}
+   x(10), y(18), lives(7), texture(tex), isAlive(true), currentDirection(UP) {}
 bool Tank ::move(int dx, int dy, Map& map){
     int newX=x+dx;
     int newY=y+dy;

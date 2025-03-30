@@ -30,7 +30,8 @@ public:
     SDL_Texture* bulletTexture = nullptr;
     SDL_Texture* wallDamagedTexture = nullptr;
     SDL_Texture* titleTexture = nullptr;
-    SDL_Texture* gameOverTexture = nullptr;
+    SDL_Texture* youWinTexture = nullptr;
+    SDL_Texture* youLoseTexture = nullptr;
     vector<EnemyTank*> enemies;
     bool gameOver = false;
     bool gameWin = false;
@@ -82,11 +83,13 @@ public:
         bulletTexture = loadTexture("dan.png");
         wallDamagedTexture = loadTexture("nen.png");
         titleTexture = loadTexture("man hinh ban dau.png");
-        gameOverTexture = loadTexture("game_over.png");
-    if (!gameOverTexture) {
-        cout << "Không thể load texture Game Over!" << endl;
+        youWinTexture = loadTexture("youwin.png");
+        youLoseTexture = loadTexture("youlose.png");
+    if (!youWinTexture || !youLoseTexture) {
+        cout << "Không thể load ảnh You Win/Lose!" << endl;
         return false;
     }
+
                 if (!wallTexture || !treeTexture || !waterTexture || !emptyTexture || !tankTexture || !enemyTankTexture || !bulletTexture || !enemyBulletTexture||!titleTexture) {
             cout << "Không thể load textures!" << endl;
             return false;
@@ -125,8 +128,8 @@ public:
         SDL_DestroyTexture(bulletTexture);
         SDL_DestroyTexture(wallDamagedTexture);
         SDL_DestroyTexture(titleTexture);
-        SDL_DestroyTexture(gameOverTexture);
-        gameOverTexture = nullptr;
+        SDL_DestroyTexture(youWinTexture);
+        SDL_DestroyTexture(youLoseTexture);
 
         // Giải phóng renderer và cửa sổ
         SDL_DestroyRenderer(renderer);
@@ -135,10 +138,6 @@ public:
 
         SDL_DestroyWindow(window);
         window = nullptr;
-         if (gameOverTexture) {
-        SDL_DestroyTexture(gameOverTexture);
-        gameOverTexture = nullptr;
-    }
 
         // Tắt SDL và SDL_image
         for (EnemyTank* enemy : enemies) {
@@ -223,7 +222,7 @@ public:
             update();
             render();
         } else {
-            showGameOverScreen();
+             SDL_Delay(3000);
             quit = true;
         }
         }
@@ -333,14 +332,7 @@ void updateBullets() {
         }
     }
 }
- void showGameOverScreen() {
 
-    SDL_RenderClear(renderer);
-    SDL_Rect destRect = {0, 0, 640, 640};
-    SDL_RenderCopy(renderer, gameOverTexture, NULL, &destRect);
-    SDL_RenderPresent(renderer);
-    SDL_Delay(3000);
-}
     void render() {
         // Clear screen
         SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
@@ -370,7 +362,27 @@ void updateBullets() {
                 bullet->render(renderer);
             }
         }
+         if (gameOver) {
+        SDL_Texture* textureToShow = nullptr;
+        SDL_Rect destRect;
+        destRect.x = 0;
+        destRect.y = 0;
+        destRect.w = SCREEN_WIDTH;
+        destRect.h = SCREEN_HEIGHT;
+
+        if (tank->isAlive) {
+            textureToShow = youWinTexture; // Thắng
+
+        } else {
+            textureToShow = youLoseTexture; // Thua
+
+        }
+
+        SDL_RenderCopy(renderer, textureToShow, NULL, &destRect);
+
+    }
         SDL_RenderPresent(renderer);
+
     }
 };       // Xóa màn hình
 
